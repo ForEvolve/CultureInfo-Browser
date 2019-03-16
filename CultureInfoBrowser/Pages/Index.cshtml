@@ -14,13 +14,22 @@
     <div class="card-body">
         <form method="post">
             <div class="row">
-                <div class="col">
+                <div class="col-5">
                     <div class="form-group">
                         <label for="nameCode">Name (code): </label>
                         <input type="text" asp-for="NameCode" class="form-control" id="nameCode" placeholder="en">
                     </div>
                 </div>
-                <div class="col">
+                <div class="col-2">
+                    <div class="form-group">
+                        <label for="englishName">Type: </label>
+                        <select class="custom-select" asp-for="FilterType">
+                            <option value="0" selected>Or</option>
+                            <option value="1">And</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-5">
                     <div class="form-group">
                         <label for="englishName">English name: </label>
                         <input type="text" asp-for="EnglishName" class="form-control" id="englishName" placeholder="english">

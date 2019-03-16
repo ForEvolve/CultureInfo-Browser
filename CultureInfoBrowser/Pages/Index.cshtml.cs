@@ -29,6 +29,8 @@ namespace CultureInfoBrowser.Pages
         public string NameCode { get; set; }
         [BindProperty]
         public string EnglishName { get; set; }
+        [BindProperty]
+        public FilterType FilterType { get; set; }
 
         public void OnGet()
         {
@@ -55,10 +57,20 @@ namespace CultureInfoBrowser.Pages
 
             if (hasNameCodeFilter && hasEnglishNameFilter)
             {
-                NeutralCultures = NeutralCultures
-                    .Where(c => c.Name.Contains(NameCode, StringComparison.InvariantCultureIgnoreCase) || c.EnglishName.Contains(EnglishName, StringComparison.InvariantCultureIgnoreCase));
-                CultureSpecific = CultureSpecific
-                    .Where(c => c.Name.Contains(NameCode, StringComparison.InvariantCultureIgnoreCase) || c.EnglishName.Contains(EnglishName, StringComparison.InvariantCultureIgnoreCase));
+                if(FilterType == FilterType.And)
+                {
+                    NeutralCultures = NeutralCultures
+                        .Where(c => c.Name.Contains(NameCode, StringComparison.InvariantCultureIgnoreCase) && c.EnglishName.Contains(EnglishName, StringComparison.InvariantCultureIgnoreCase));
+                    CultureSpecific = CultureSpecific
+                        .Where(c => c.Name.Contains(NameCode, StringComparison.InvariantCultureIgnoreCase) && c.EnglishName.Contains(EnglishName, StringComparison.InvariantCultureIgnoreCase));
+                }
+                else
+                {
+                    NeutralCultures = NeutralCultures
+                        .Where(c => c.Name.Contains(NameCode, StringComparison.InvariantCultureIgnoreCase) || c.EnglishName.Contains(EnglishName, StringComparison.InvariantCultureIgnoreCase));
+                    CultureSpecific = CultureSpecific
+                        .Where(c => c.Name.Contains(NameCode, StringComparison.InvariantCultureIgnoreCase) || c.EnglishName.Contains(EnglishName, StringComparison.InvariantCultureIgnoreCase));
+                }
             }
             else if (hasNameCodeFilter)
             {
@@ -71,5 +83,11 @@ namespace CultureInfoBrowser.Pages
                 CultureSpecific = CultureSpecific.Where(c => c.EnglishName.Contains(EnglishName, StringComparison.InvariantCultureIgnoreCase));
             }
         }
+    }
+
+    public enum FilterType
+    {
+        Or,
+        And
     }
 }
