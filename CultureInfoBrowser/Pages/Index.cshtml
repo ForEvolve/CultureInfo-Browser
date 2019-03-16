@@ -5,6 +5,62 @@
 }
 
 <div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    <h1 class="display-4">Welcome to CultureInfo Browser!</h1>
+    <p>...</p>
+</div>
+
+<div class="card">
+    <h5 class="card-header">Filters</h5>
+    <div class="card-body">
+        <form method="post">
+            <div class="row">
+                <div class="col">
+                    <div class="form-group">
+                        <label for="nameCode">Name (code): </label>
+                        <input type="text" asp-for="NameCode" class="form-control" id="nameCode" placeholder="en">
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="form-group">
+                        <label for="englishName">English name: </label>
+                        <input type="text" asp-for="EnglishName" class="form-control" id="englishName" placeholder="english">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col text-center">
+                    <button type="submit" class="btn btn-block btn-primary">Filter</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<br />
+
+<div class="card-deck">
+    <div class="card">
+        <h5 class="card-header">Neutral Cultures</h5>
+        <ul class="list-group list-group-flush">
+            @foreach (var culture in Model.NeutralCultures)
+            {
+                <li class="list-group-item">
+                    @culture.EnglishName
+                    <span class="badge badge-dark">@culture.Name</span>
+                </li>
+            }
+        </ul>
+    </div>
+    <div class="card">
+        <h5 class="card-header">Culture Specifics</h5>
+        <ul class="list-group list-group-flush">
+            @foreach (var culture in Model.CultureSpecific)
+            {
+                <li class="list-group-item">
+                    @culture.EnglishName
+                    <span class="badge badge-dark">@culture.Name</span>
+                </li>
+            }
+        </ul>
+    </div>
 </div>
