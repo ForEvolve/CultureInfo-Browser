@@ -5,3 +5,4 @@ This is a simple Asp.Net Core `CultureInfo` explorer.
 
 A live version is hosted on a free Azure Web App: https://cultureinfobrowser.azurewebsites.net
 
+![Screenshot](Screenshot_85.png)
