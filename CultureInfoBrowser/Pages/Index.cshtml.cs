@@ -1,25 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace CultureInfoBrowser.Pages
 {
-    // TODO:
-    // Add a "AND/OR" dropdown list in the filters
-    // Make the filter work on GET so it is possible to link to a filtered page
-    //
-
     public class IndexModel : PageModel
     {
         private readonly CultureService _cultureService;
+        private readonly TelemetryClient _telemetryClient;
+        private readonly Stopwatch _timer = new Stopwatch();
 
-        public IndexModel(CultureService cultureService)
+        public IndexModel(CultureService cultureService, TelemetryClient telemetryClient)
         {
+            
             _cultureService = cultureService ?? throw new ArgumentNullException(nameof(cultureService));
+            _telemetryClient = telemetryClient ?? throw new ArgumentNullException(nameof(telemetryClient));
         }
 
         public IEnumerable<LightCultureInfo> NeutralCultures { get; private set; }
@@ -27,8 +29,10 @@ namespace CultureInfoBrowser.Pages
 
         [BindProperty(SupportsGet = true)]
         public string NameCode { get; set; }
+
         [BindProperty(SupportsGet = true)]
         public string EnglishName { get; set; }
+
         [BindProperty(SupportsGet = true)]
         public FilterType FilterType { get; set; }
 
@@ -46,6 +50,8 @@ namespace CultureInfoBrowser.Pages
 
         private void FilterInfo()
         {
+            _timer.Start();
+            var telemetryName = "Nothing";
             var hasNameCodeFilter = !string.IsNullOrWhiteSpace(NameCode);
             var hasEnglishNameFilter = !string.IsNullOrWhiteSpace(EnglishName);
 
@@ -57,6 +63,7 @@ namespace CultureInfoBrowser.Pages
                         .Where(c => c.Name.Contains(NameCode, StringComparison.InvariantCultureIgnoreCase) && c.EnglishName.Contains(EnglishName, StringComparison.InvariantCultureIgnoreCase));
                     CultureSpecific = CultureSpecific
                         .Where(c => c.Name.Contains(NameCode, StringComparison.InvariantCultureIgnoreCase) && c.EnglishName.Contains(EnglishName, StringComparison.InvariantCultureIgnoreCase));
+                    telemetryName = "NameAndEnglishName";
                 }
                 else
                 {
@@ -64,18 +71,36 @@ namespace CultureInfoBrowser.Pages
                         .Where(c => c.Name.Contains(NameCode, StringComparison.InvariantCultureIgnoreCase) || c.EnglishName.Contains(EnglishName, StringComparison.InvariantCultureIgnoreCase));
                     CultureSpecific = CultureSpecific
                         .Where(c => c.Name.Contains(NameCode, StringComparison.InvariantCultureIgnoreCase) || c.EnglishName.Contains(EnglishName, StringComparison.InvariantCultureIgnoreCase));
+                    telemetryName = "NameOrEnglishName";
                 }
             }
             else if (hasNameCodeFilter)
             {
                 NeutralCultures = NeutralCultures.Where(c => c.Name.Contains(NameCode, StringComparison.InvariantCultureIgnoreCase));
                 CultureSpecific = CultureSpecific.Where(c => c.Name.Contains(NameCode, StringComparison.InvariantCultureIgnoreCase));
+                telemetryName = "Name";
             }
             else if (hasEnglishNameFilter)
             {
                 NeutralCultures = NeutralCultures.Where(c => c.EnglishName.Contains(EnglishName, StringComparison.InvariantCultureIgnoreCase));
                 CultureSpecific = CultureSpecific.Where(c => c.EnglishName.Contains(EnglishName, StringComparison.InvariantCultureIgnoreCase));
+                telemetryName = "EnglishName";
             }
+            _timer.Stop();
+            TrackEventTelemetry(telemetryName);
+        }
+
+        private void TrackEventTelemetry(string name)
+        {
+            var telemetry = new EventTelemetry($"FilterCultureBy{name}");
+            telemetry.Properties.Add("NameCode", NameCode);
+            telemetry.Properties.Add("EnglishName", EnglishName);
+            telemetry.Properties.Add("FilterType", FilterType.ToString());
+            telemetry.Metrics.Add("NeutralCultures.Count", NeutralCultures.Count());
+            telemetry.Metrics.Add("CultureSpecific.Count", CultureSpecific.Count());
+            telemetry.Metrics.Add("FilterTime (ms)", _timer.ElapsedMilliseconds);
+            telemetry.Metrics.Add("FilterTime (ticks)", _timer.ElapsedTicks);
+            _telemetryClient.TrackEvent(telemetry);
         }
     }
 
