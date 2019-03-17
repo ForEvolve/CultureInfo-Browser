@@ -25,20 +25,14 @@ namespace CultureInfoBrowser.Pages
         public IEnumerable<LightCultureInfo> NeutralCultures { get; private set; }
         public IEnumerable<LightCultureInfo> CultureSpecific { get; private set; }
 
-        [BindProperty]
+        [BindProperty(SupportsGet = true)]
         public string NameCode { get; set; }
-        [BindProperty]
+        [BindProperty(SupportsGet = true)]
         public string EnglishName { get; set; }
-        [BindProperty]
+        [BindProperty(SupportsGet = true)]
         public FilterType FilterType { get; set; }
 
         public void OnGet()
-        {
-            GetInfo();
-            FilterInfo();
-        }
-
-        public void OnPost()
         {
             GetInfo();
             FilterInfo();
